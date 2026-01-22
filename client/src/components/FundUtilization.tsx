@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { Wallet, TrendingUp, Building2, Wrench, Banknote, Package } from "lucide-react";
 import type { Ipo } from "@shared/schema";
 
@@ -109,12 +109,6 @@ export function FundUtilization({ ipo }: FundUtilizationProps) {
                   `${value}% (₹${props.payload.amount} Cr)`, 
                   name
                 ]}
-              />
-              <Legend 
-                layout="vertical" 
-                align="right" 
-                verticalAlign="middle"
-                formatter={(value: string) => <span className="text-xs text-muted-foreground">{value}</span>}
               />
             </PieChart>
           </ResponsiveContainer>

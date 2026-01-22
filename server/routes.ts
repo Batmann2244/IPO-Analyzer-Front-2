@@ -60,6 +60,34 @@ export async function registerRoutes(
       }
 
       const item = await storage.addToWatchlist(userId, ipoId);
+      
+      // Generate timeline events for the watchlisted IPO
+      const existingTimeline = await storage.getIpoTimeline(ipoId);
+      if (existingTimeline.length === 0 && ipo.expectedDate) {
+        const baseDate = new Date(ipo.expectedDate);
+        const events = [
+          { type: "drhp_filing", offsetDays: -30, description: "DRHP filed with SEBI" },
+          { type: "price_band", offsetDays: -2, description: "Price band announced" },
+          { type: "open_date", offsetDays: 0, description: "IPO opens for subscription" },
+          { type: "close_date", offsetDays: 3, description: "IPO closes for subscription" },
+          { type: "allotment", offsetDays: 7, description: "Share allotment finalized" },
+          { type: "refund", offsetDays: 9, description: "Refund initiated for unallotted" },
+          { type: "listing", offsetDays: 10, description: "Shares listed on exchange" },
+        ];
+        
+        for (const event of events) {
+          const eventDate = new Date(baseDate);
+          eventDate.setDate(eventDate.getDate() + event.offsetDays);
+          await storage.addTimelineEvent({
+            ipoId,
+            eventType: event.type,
+            eventDate: eventDate.toISOString().split('T')[0],
+            description: event.description,
+            isConfirmed: event.offsetDays <= 0,
+          });
+        }
+      }
+      
       res.status(201).json(item);
     } catch (err) {
       if (err instanceof z.ZodError) {
@@ -150,6 +178,37 @@ export async function registerRoutes(
           const funds = generateFundUtilization(ipoId);
           for (const fund of funds) {
             await storage.addFundUtilization(fund);
+          }
+        }
+        
+        // Generate timeline events for all IPOs
+        const existingTimeline = await storage.getIpoTimeline(ipoId);
+        if (existingTimeline.length === 0) {
+          // Use expected date if available, otherwise use a future date (30 days from now)
+          const baseDate = savedIpo.expectedDate 
+            ? new Date(savedIpo.expectedDate) 
+            : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+          
+          const events = [
+            { type: "drhp_filing", offsetDays: -30, description: "DRHP filed with SEBI" },
+            { type: "price_band", offsetDays: -2, description: "Price band announced" },
+            { type: "open_date", offsetDays: 0, description: "IPO opens for subscription" },
+            { type: "close_date", offsetDays: 3, description: "IPO closes for subscription" },
+            { type: "allotment", offsetDays: 7, description: "Share allotment finalized" },
+            { type: "refund", offsetDays: 9, description: "Refund initiated for unallotted" },
+            { type: "listing", offsetDays: 10, description: "Shares listed on exchange" },
+          ];
+          
+          for (const event of events) {
+            const eventDate = new Date(baseDate);
+            eventDate.setDate(eventDate.getDate() + event.offsetDays);
+            await storage.addTimelineEvent({
+              ipoId,
+              eventType: event.type,
+              eventDate: eventDate.toISOString().split('T')[0],
+              description: event.description,
+              isConfirmed: savedIpo.expectedDate ? event.offsetDays <= 0 : false,
+            });
           }
         }
       }
@@ -375,6 +434,33 @@ async function autoSyncOnStartup() {
           const funds = generateFundUtilization(ipoId);
           for (const fund of funds) {
             await storage.addFundUtilization(fund);
+          }
+          
+          // Generate timeline events
+          const baseDate = savedIpo.expectedDate 
+            ? new Date(savedIpo.expectedDate) 
+            : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+          
+          const events = [
+            { type: "drhp_filing", offsetDays: -30, description: "DRHP filed with SEBI" },
+            { type: "price_band", offsetDays: -2, description: "Price band announced" },
+            { type: "open_date", offsetDays: 0, description: "IPO opens for subscription" },
+            { type: "close_date", offsetDays: 3, description: "IPO closes for subscription" },
+            { type: "allotment", offsetDays: 7, description: "Share allotment finalized" },
+            { type: "refund", offsetDays: 9, description: "Refund initiated for unallotted" },
+            { type: "listing", offsetDays: 10, description: "Shares listed on exchange" },
+          ];
+          
+          for (const event of events) {
+            const eventDate = new Date(baseDate);
+            eventDate.setDate(eventDate.getDate() + event.offsetDays);
+            await storage.addTimelineEvent({
+              ipoId,
+              eventType: event.type,
+              eventDate: eventDate.toISOString().split('T')[0],
+              description: event.description,
+              isConfirmed: savedIpo.expectedDate ? event.offsetDays <= 0 : false,
+            });
           }
         }
         console.log(`✅ Auto-synced ${scrapedIpos.length} IPOs with analytics data from Chittorgarh`);
