@@ -1,16 +1,4 @@
-import OpenAI from "openai";
 import type { Ipo } from "@shared/schema";
-
-function getOpenAIClient(): OpenAI | null {
-  const apiKey = process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
-  if (!apiKey) {
-    return null;
-  }
-  return new OpenAI({
-    apiKey,
-    baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
-  });
-}
 
 interface AIAnalysisResult {
   summary: string;
@@ -19,46 +7,151 @@ interface AIAnalysisResult {
   keyInsights: string[];
 }
 
+type AIProvider = "gemini" | "mistral" | "openai";
+
+function getAIProvider(): { provider: AIProvider; apiKey: string; baseUrl?: string } | null {
+  if (process.env.GEMINI_API_KEY) {
+    return { provider: "gemini", apiKey: process.env.GEMINI_API_KEY };
+  }
+  if (process.env.MISTRAL_API_KEY) {
+    return { provider: "mistral", apiKey: process.env.MISTRAL_API_KEY };
+  }
+  if (process.env.AI_INTEGRATIONS_OPENAI_API_KEY) {
+    return { 
+      provider: "openai", 
+      apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
+      baseUrl: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL
+    };
+  }
+  return null;
+}
+
+async function callGeminiAPI(prompt: string, systemPrompt: string, apiKey: string): Promise<string> {
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{ text: `${systemPrompt}\n\n${prompt}` }]
+        }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 800,
+        }
+      })
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Gemini API error: ${error}`);
+  }
+
+  const data = await response.json();
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+}
+
+async function callMistralAPI(prompt: string, systemPrompt: string, apiKey: string): Promise<string> {
+  const response = await fetch("https://api.mistral.ai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: "mistral-small-latest",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: prompt }
+      ],
+      temperature: 0.7,
+      max_tokens: 800,
+    })
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Mistral API error: ${error}`);
+  }
+
+  const data = await response.json();
+  return data.choices?.[0]?.message?.content || "";
+}
+
+async function callOpenAIAPI(prompt: string, systemPrompt: string, apiKey: string, baseUrl?: string): Promise<string> {
+  const url = baseUrl ? `${baseUrl}/chat/completions` : "https://api.openai.com/v1/chat/completions";
+  
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: prompt }
+      ],
+      temperature: 0.7,
+      max_tokens: 800,
+    })
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`OpenAI API error: ${error}`);
+  }
+
+  const data = await response.json();
+  return data.choices?.[0]?.message?.content || "";
+}
+
 export async function analyzeIpo(ipo: Ipo): Promise<AIAnalysisResult> {
-  const openai = getOpenAIClient();
-  if (!openai) {
+  const config = getAIProvider();
+  
+  if (!config) {
     return {
-      summary: "AI analysis requires OpenAI API key configuration.",
+      summary: "AI analysis requires an API key. Add GEMINI_API_KEY, MISTRAL_API_KEY, or configure OpenAI to enable this feature.",
       recommendation: "Unable to generate recommendation without API key.",
       riskAssessment: ipo.riskLevel || "unknown",
       keyInsights: [],
     };
   }
 
-  const prompt = buildAnalysisPrompt(ipo);
-  
-  try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content: `You are an expert IPO analyst for the Indian stock market (NSE/BSE). 
+  const systemPrompt = `You are an expert IPO analyst for the Indian stock market (NSE/BSE). 
 Analyze IPOs objectively based on fundamentals, valuation, and governance metrics.
 Provide balanced, factual analysis. This is for screening purposes only, not investment advice.
 Always include a disclaimer that users should consult SEBI-registered advisors.
-Keep responses concise but informative.`
-        },
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
-      temperature: 0.7,
-      max_tokens: 800,
-    });
+Keep responses concise but informative.`;
 
-    const content = response.choices[0]?.message?.content || "";
+  const prompt = buildAnalysisPrompt(ipo);
+  
+  try {
+    let content: string;
+    
+    switch (config.provider) {
+      case "gemini":
+        console.log("Using Gemini for AI analysis");
+        content = await callGeminiAPI(prompt, systemPrompt, config.apiKey);
+        break;
+      case "mistral":
+        console.log("Using Mistral for AI analysis");
+        content = await callMistralAPI(prompt, systemPrompt, config.apiKey);
+        break;
+      case "openai":
+        console.log("Using OpenAI for AI analysis");
+        content = await callOpenAIAPI(prompt, systemPrompt, config.apiKey, config.baseUrl);
+        break;
+    }
+
     return parseAnalysisResponse(content, ipo);
   } catch (error) {
     console.error("AI Analysis error:", error);
     return {
-      summary: "AI analysis currently unavailable.",
+      summary: "AI analysis currently unavailable. Please check your API key configuration.",
       recommendation: "Unable to generate recommendation.",
       riskAssessment: ipo.riskLevel || "unknown",
       keyInsights: [],

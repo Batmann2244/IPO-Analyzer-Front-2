@@ -9,7 +9,6 @@ import { z } from "zod";
 import { calculateIpoScore } from "./services/scoring";
 import { scrapeAndTransformIPOs, testScraper } from "./services/scraper";
 import { analyzeIpo } from "./services/ai-analysis";
-import { initTelegramBot, verifyTelegramChatId, sendIpoAlert } from "./services/telegram";
 import { sendIpoEmailAlert } from "./services/email";
 
 export async function registerRoutes(
@@ -194,7 +193,6 @@ export async function registerRoutes(
     const prefs = await storage.getAlertPreferences(userId);
     res.json(prefs || {
       emailEnabled: false,
-      telegramEnabled: false,
       alertOnNewIpo: true,
       alertOnGmpChange: true,
       alertOnOpenDate: true,
@@ -216,26 +214,6 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/alerts/verify-telegram", requireAuth, async (req, res) => {
-    try {
-      const { chatId } = req.body;
-      if (!chatId) {
-        return res.status(400).json({ success: false, message: "Chat ID required" });
-      }
-
-      const verified = await verifyTelegramChatId(chatId);
-      if (verified) {
-        const userId = (req.user as any).claims.sub;
-        await storage.upsertAlertPreferences(userId, { telegramChatId: chatId });
-        res.json({ success: true, message: "Telegram connected successfully" });
-      } else {
-        res.status(400).json({ success: false, message: "Invalid chat ID or bot not started" });
-      }
-    } catch (error) {
-      res.status(500).json({ success: false, message: "Verification failed" });
-    }
-  });
-
   app.get("/api/alerts/logs", requireAuth, async (req, res) => {
     const userId = (req.user as any).claims.sub;
     const logs = await storage.getAlertLogs(userId, 50);
@@ -252,7 +230,7 @@ export async function registerRoutes(
       }
 
       const prefs = await storage.getAlertPreferences(userId);
-      const results = { email: false, telegram: false };
+      const results = { email: false };
 
       if (prefs?.emailEnabled && prefs.email) {
         results.email = await sendIpoEmailAlert(prefs.email, ipo, "new_ipo");
@@ -266,18 +244,6 @@ export async function registerRoutes(
         });
       }
 
-      if (prefs?.telegramEnabled && prefs.telegramChatId) {
-        results.telegram = await sendIpoAlert(prefs.telegramChatId, ipo, "new_ipo");
-        await storage.createAlertLog({
-          userId,
-          ipoId: ipo.id,
-          alertType: "new_ipo",
-          channel: "telegram",
-          status: results.telegram ? "sent" : "failed",
-          message: `Test alert for ${ipo.companyName}`,
-        });
-      }
-
       res.json({ success: true, results });
     } catch (error) {
       res.status(500).json({ 
@@ -286,9 +252,6 @@ export async function registerRoutes(
       });
     }
   });
-
-  // Initialize Telegram bot
-  initTelegramBot();
 
   // Seed Data
   await seedDatabase();

@@ -6,14 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Mail, Send, Loader2, CheckCircle } from "lucide-react";
+import { Mail, Loader2 } from "lucide-react";
 
 interface AlertPreferences {
   id?: number;
   emailEnabled: boolean;
   email: string | null;
-  telegramEnabled: boolean;
-  telegramChatId: string | null;
   alertOnNewIpo: boolean;
   alertOnGmpChange: boolean;
   alertOnOpenDate: boolean;
@@ -22,7 +20,6 @@ interface AlertPreferences {
 
 export function AlertSettings() {
   const { toast } = useToast();
-  const [telegramChatId, setTelegramChatId] = useState("");
   const [email, setEmail] = useState("");
 
   const { data: prefs, isLoading } = useQuery<AlertPreferences>({
@@ -39,24 +36,6 @@ export function AlertSettings() {
     },
     onError: () => {
       toast({ title: "Error", description: "Failed to save settings", variant: "destructive" });
-    },
-  });
-
-  const verifyTelegram = useMutation({
-    mutationFn: async (chatId: string) => {
-      return apiRequest("POST", "/api/alerts/verify-telegram", { chatId });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/alerts/preferences"] });
-      toast({ title: "Connected!", description: "Telegram alerts enabled" });
-      setTelegramChatId("");
-    },
-    onError: () => {
-      toast({ 
-        title: "Failed", 
-        description: "Could not verify Telegram. Make sure you started the bot.", 
-        variant: "destructive" 
-      });
     },
   });
 
@@ -107,61 +86,9 @@ export function AlertSettings() {
                 {updatePrefs.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
               </Button>
             </div>
-          </div>
-        )}
-      </div>
-
-      <div className="border-t border-border pt-6 space-y-4">
-        <div className="flex items-center gap-2 text-foreground font-medium">
-          <Send className="h-4 w-4 text-primary" />
-          Telegram Alerts
-        </div>
-        <div className="flex items-center justify-between">
-          <Label htmlFor="telegram-enabled" className="text-muted-foreground">Enable Telegram alerts</Label>
-          <Switch
-            id="telegram-enabled"
-            data-testid="switch-telegram-enabled"
-            checked={prefs?.telegramEnabled || false}
-            onCheckedChange={(checked) => updatePrefs.mutate({ telegramEnabled: checked })}
-          />
-        </div>
-
-        {prefs?.telegramEnabled && (
-          <div className="space-y-4">
-            {prefs?.telegramChatId ? (
-              <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-600" />
-                <div>
-                  <p className="text-sm text-green-700 font-medium">Telegram connected</p>
-                  <p className="text-xs text-muted-foreground">Chat ID: {prefs.telegramChatId}</p>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">
-                  1. Start chat with our bot on Telegram<br />
-                  2. Send /start to get your Chat ID<br />
-                  3. Enter your Chat ID below
-                </p>
-                <div className="flex gap-2">
-                  <Input
-                    data-testid="input-telegram-chat-id"
-                    placeholder="Enter your Telegram Chat ID"
-                    value={telegramChatId}
-                    onChange={(e) => setTelegramChatId(e.target.value)}
-                    className="bg-background"
-                  />
-                  <Button 
-                    data-testid="button-verify-telegram"
-                    onClick={() => verifyTelegram.mutate(telegramChatId)}
-                    disabled={!telegramChatId || verifyTelegram.isPending}
-                    className="bg-primary text-white hover:bg-primary/90"
-                  >
-                    {verifyTelegram.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Connect"}
-                  </Button>
-                </div>
-              </div>
-            )}
+            <p className="text-xs text-muted-foreground">
+              Email alerts require a Resend API key to be configured on the server.
+            </p>
           </div>
         )}
       </div>

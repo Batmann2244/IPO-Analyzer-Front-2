@@ -47,7 +47,7 @@ Preferred communication style: Simple, everyday language.
 - **Dashboard** (`/dashboard`): Stats cards, search, filters, IPO card grid
 - **IPO Detail** (`/ipos/:id`): Score ring visualization, metrics cards, AI analysis section
 - **Watchlist** (`/watchlist`): Tracked IPOs table with remove functionality
-- **Settings** (`/settings`): Profile info, alert preferences (email/Telegram)
+- **Settings** (`/settings`): Profile info, email alert preferences
 - **Admin** (`/admin`): Data sync controls, database stats
 
 ### Landing Page Features (January 2026)
@@ -132,8 +132,9 @@ Preferred communication style: Simple, everyday language.
 
 ## AI Analysis
 
-### OpenAI Integration (`server/services/ai-analysis.ts`)
-- Uses Replit AI Integrations (gpt-4o-mini model)
+### Multi-Provider AI (`server/services/ai-analysis.ts`)
+- Supports multiple LLM providers: **Gemini**, **Mistral**, or **OpenAI**
+- Automatically detects which API key is configured (checks in order: GEMINI_API_KEY, MISTRAL_API_KEY, then OpenAI)
 - Analyzes IPO fundamentals, valuation, and governance
 - Generates summary, recommendation, and key insights
 - Stores analysis in `aiSummary` and `aiRecommendation` fields
@@ -148,15 +149,9 @@ Preferred communication style: Simple, everyday language.
 - Requires `RESEND_API_KEY` environment variable
 - Sends formatted HTML emails with IPO details and scores
 
-### Telegram Alerts (`server/services/telegram.ts`)
-- Uses Telegram Bot API (node-telegram-bot-api)
-- Requires `TELEGRAM_BOT_TOKEN` environment variable
-- Sends formatted messages with HTML parsing
-
 ### Alert Preferences API
 - `GET /api/alerts/preferences` - Get user alert settings
 - `POST /api/alerts/preferences` - Update alert settings
-- `POST /api/alerts/verify-telegram` - Verify Telegram chat ID
 - `GET /api/alerts/logs` - Get alert history
 
 ### Alert Types
@@ -190,4 +185,5 @@ Preferred communication style: Simple, everyday language.
 - `REPL_ID` - Replit environment identifier (auto-set on Replit)
 - `ISSUER_URL` - OpenID Connect issuer (defaults to Replit's OIDC)
 - `RESEND_API_KEY` - (Optional) Resend API key for email alerts
-- `TELEGRAM_BOT_TOKEN` - (Optional) Telegram bot token for Telegram alerts
+- `GEMINI_API_KEY` - (Optional) Google Gemini API key for AI analysis
+- `MISTRAL_API_KEY` - (Optional) Mistral API key for AI analysis
