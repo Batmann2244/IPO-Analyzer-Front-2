@@ -2,7 +2,31 @@
 
 ## Overview
 
-IPO Analyzer is a full-stack web application for tracking and analyzing Initial Public Offerings (IPOs) in the Indian market. Users can browse upcoming, open, and closed IPOs, add them to a personal watchlist, and view detailed information about each offering. The platform provides institutional-grade IPO data with a modern, professional UI designed for retail investors.
+IPO Analyzer is a full-stack web application for tracking and analyzing Initial Public Offerings (IPOs) in the Indian market. The app functions as an **IPO screener and risk flagging tool** (not investment advice) that analyzes IPOs based on fundamentals, valuation, and governance. Users can browse upcoming, open, and closed IPOs, view computed scores and red flags, and add offerings to a personal watchlist.
+
+## IPO Scoring System
+
+### Score Categories
+- **Fundamentals Score (40% weight)**: Revenue growth, ROE, ROCE, EBITDA margins, debt levels
+- **Valuation Score (35% weight)**: P/E ratio vs sector median, absolute valuation metrics
+- **Governance Score (25% weight)**: OFS ratio, promoter holding, stake dilution
+
+### Risk Levels
+- **Conservative**: Overall score >= 7.0 with minimal red flags
+- **Moderate**: Overall score 5.0-7.0 or few red flags
+- **Aggressive**: Overall score < 5.0 or significant red flags
+
+### Red Flags Detected
+- High OFS ratio (promoters aggressively exiting)
+- Expensive P/E valuation vs listed peers
+- Weak revenue growth
+- High debt burden (D/E > 1.5)
+- Low promoter holding
+- Negative grey market premium
+- Below-average ROE/ROCE
+
+### Important Disclaimer
+This is a screening tool only. Scores are computed from available data and should not be considered investment advice. Users should review the full DRHP/RHP and consult SEBI-registered advisors.
 
 ## User Preferences
 
