@@ -4,7 +4,8 @@ import type { InsertIpo } from "@shared/schema";
 import { calculateIpoScore } from "./scoring";
 
 const CHITTORGARH_BASE = "https://www.chittorgarh.com";
-const IPO_DASHBOARD = `${CHITTORGARH_BASE}/report/ipo-in-india-702/`;
+const IPO_DASHBOARD = `${CHITTORGARH_BASE}/ipo/ipo_dashboard.asp`;
+const IPO_LIST_2025 = `${CHITTORGARH_BASE}/report/ipo-in-india-list-main-board-sme/82/mainboard/?year=2025`;
 
 interface RawIpoData {
   symbol: string;
@@ -105,58 +106,121 @@ function determineStatus(openDate: string | null, closeDate: string | null): "up
 export async function scrapeMainboardIPOs(): Promise<RawIpoData[]> {
   console.log("📊 Scraping Chittorgarh IPO dashboard...");
   
-  const html = await fetchPage(IPO_DASHBOARD);
-  const $ = cheerio.load(html);
-  
   const ipos: RawIpoData[] = [];
   
-  $("table").each((_, table) => {
-    const headerText = $(table).find("th").first().text().toLowerCase();
-    if (!headerText.includes("ipo") && !headerText.includes("company")) return;
+  try {
+    const html = await fetchPage(IPO_DASHBOARD);
+    const $ = cheerio.load(html);
     
-    $(table).find("tbody tr").each((_, row) => {
-      const cells = $(row).find("td");
-      if (cells.length < 4) return;
-      
-      const companyCell = cells.eq(0);
-      const companyName = companyCell.text().trim();
-      const detailLink = companyCell.find("a").attr("href");
-      
-      if (!companyName || companyName.length < 3) return;
-      
-      const symbol = companyName
-        .replace(/\s+(Ltd|Limited|IPO|India|Private|Pvt)\.?/gi, "")
-        .replace(/[^a-zA-Z0-9]/g, "")
-        .toUpperCase()
-        .slice(0, 10);
-      
-      const openDateStr = cells.eq(1).text().trim();
-      const closeDateStr = cells.eq(2).text().trim();
-      const issueSize = cells.eq(3).text().trim();
-      const priceRange = cells.eq(4)?.text()?.trim() || "";
-      const lotSizeText = cells.eq(5)?.text()?.trim() || "";
-      
-      const openDate = parseDate(openDateStr);
-      const closeDate = parseDate(closeDateStr);
-      const status = determineStatus(openDate, closeDate);
-      
-      const lotSize = parseInt(lotSizeText.replace(/[^0-9]/g, "")) || 0;
-      
-      if (symbol && companyName) {
-        ipos.push({
-          symbol,
-          companyName: companyName.replace(/\s+IPO$/i, "").trim(),
-          openDate: openDateStr,
-          closeDate: closeDateStr,
-          priceRange: priceRange || "TBA",
-          lotSize,
-          issueSize: issueSize || "TBA",
-          status,
-          detailUrl: detailLink ? (detailLink.startsWith("http") ? detailLink : `${CHITTORGARH_BASE}${detailLink}`) : "",
-        });
-      }
+    $("table").each((_, table) => {
+      $(table).find("tr").each((_, row) => {
+        const cells = $(row).find("td");
+        if (cells.length < 3) return;
+        
+        const companyCell = cells.eq(0);
+        const companyText = companyCell.text().trim();
+        const detailLink = companyCell.find("a").attr("href");
+        
+        if (!companyText || companyText.length < 3) return;
+        if (companyText.toLowerCase().includes("company") || companyText.toLowerCase().includes("ipo name")) return;
+        
+        const companyName = companyText
+          .replace(/\s+IPO$/i, "")
+          .replace(/\s+\(.*?\)/g, "")
+          .trim();
+        
+        const symbol = companyName
+          .replace(/\s+(Ltd|Limited|India|Private|Pvt|Technologies|Tech|Industries|Infra)\.?/gi, "")
+          .replace(/[^a-zA-Z0-9]/g, "")
+          .toUpperCase()
+          .slice(0, 12);
+        
+        const datesCell = cells.eq(1).text().trim();
+        const priceCell = cells.eq(2).text().trim();
+        const issueSizeCell = cells.eq(3)?.text()?.trim() || "";
+        const lotSizeCell = cells.eq(4)?.text()?.trim() || "";
+        
+        const dateParts = datesCell.split(/[-–to]/i).map(d => d.trim());
+        const openDateStr = dateParts[0] || "";
+        const closeDateStr = dateParts[1] || dateParts[0] || "";
+        
+        const openDate = parseDate(openDateStr);
+        const closeDate = parseDate(closeDateStr);
+        const status = determineStatus(openDate, closeDate);
+        
+        const lotSize = parseInt(lotSizeCell.replace(/[^0-9]/g, "")) || 0;
+        
+        if (symbol && companyName && symbol.length >= 3) {
+          ipos.push({
+            symbol,
+            companyName,
+            openDate: openDateStr,
+            closeDate: closeDateStr,
+            priceRange: priceCell || "TBA",
+            lotSize,
+            issueSize: issueSizeCell || "TBA",
+            status,
+            detailUrl: detailLink ? (detailLink.startsWith("http") ? detailLink : `${CHITTORGARH_BASE}${detailLink}`) : "",
+          });
+        }
+      });
     });
-  });
+  } catch (err) {
+    console.log("Dashboard scrape failed, trying list page...");
+  }
+  
+  if (ipos.length === 0) {
+    try {
+      const html = await fetchPage(IPO_LIST_2025);
+      const $ = cheerio.load(html);
+      
+      $("table").each((_, table) => {
+        $(table).find("tr").each((_, row) => {
+          const cells = $(row).find("td");
+          if (cells.length < 4) return;
+          
+          const companyCell = cells.eq(0);
+          const companyText = companyCell.text().trim();
+          const detailLink = companyCell.find("a").attr("href");
+          
+          if (!companyText || companyText.length < 3) return;
+          
+          const companyName = companyText.replace(/\s+IPO$/i, "").trim();
+          
+          const symbol = companyName
+            .replace(/\s+(Ltd|Limited|India|Private|Pvt|Technologies|Tech)\.?/gi, "")
+            .replace(/[^a-zA-Z0-9]/g, "")
+            .toUpperCase()
+            .slice(0, 12);
+          
+          const openDateStr = cells.eq(1).text().trim();
+          const closeDateStr = cells.eq(2).text().trim();
+          const priceCell = cells.eq(3).text().trim();
+          const issueSizeCell = cells.eq(4)?.text()?.trim() || "";
+          
+          const openDate = parseDate(openDateStr);
+          const closeDate = parseDate(closeDateStr);
+          const status = determineStatus(openDate, closeDate);
+          
+          if (symbol && companyName && symbol.length >= 3) {
+            ipos.push({
+              symbol,
+              companyName,
+              openDate: openDateStr,
+              closeDate: closeDateStr,
+              priceRange: priceCell || "TBA",
+              lotSize: 0,
+              issueSize: issueSizeCell || "TBA",
+              status,
+              detailUrl: detailLink ? (detailLink.startsWith("http") ? detailLink : `${CHITTORGARH_BASE}${detailLink}`) : "",
+            });
+          }
+        });
+      });
+    } catch (err) {
+      console.error("List page scrape also failed:", err);
+    }
+  }
   
   console.log(`✅ Found ${ipos.length} IPOs from Chittorgarh`);
   return ipos;
@@ -165,42 +229,56 @@ export async function scrapeMainboardIPOs(): Promise<RawIpoData[]> {
 export async function scrapeGmpData(): Promise<GmpData[]> {
   console.log("💹 Scraping GMP data...");
   
-  const gmpUrl = `${CHITTORGARH_BASE}/report/grey-market-premium-702/`;
+  const gmpUrls = [
+    `${CHITTORGARH_BASE}/report/grey-market-premium-upcoming-ipo-mainboard/104/`,
+    `${CHITTORGARH_BASE}/report/ipo-grey-market-premium-latest-mainboard-sme/90/`,
+  ];
   
-  try {
-    const html = await fetchPage(gmpUrl);
-    const $ = cheerio.load(html);
-    
-    const gmpData: GmpData[] = [];
-    
-    $("table tbody tr").each((_, row) => {
-      const cells = $(row).find("td");
-      if (cells.length < 3) return;
+  const gmpData: GmpData[] = [];
+  
+  for (const gmpUrl of gmpUrls) {
+    try {
+      const html = await fetchPage(gmpUrl);
+      const $ = cheerio.load(html);
       
-      const companyName = cells.eq(0).text().trim();
-      const gmpText = cells.eq(1).text().trim();
-      const expectedText = cells.eq(2).text().trim();
+      $("table").find("tr").each((_, row) => {
+        const cells = $(row).find("td");
+        if (cells.length < 2) return;
+        
+        const companyName = cells.eq(0).text().trim();
+        if (!companyName || companyName.length < 3) return;
+        if (companyName.toLowerCase().includes("company") || companyName.toLowerCase().includes("ipo name")) return;
+        
+        const gmpText = cells.eq(1).text().trim();
+        const expectedText = cells.eq(2)?.text()?.trim() || "";
+        
+        const symbol = companyName
+          .replace(/\s+(Ltd|Limited|IPO|India|Private|Pvt|Technologies|Tech)\.?/gi, "")
+          .replace(/[^a-zA-Z0-9]/g, "")
+          .toUpperCase()
+          .slice(0, 12);
+        
+        const gmpMatch = gmpText.match(/[+-]?\d+/);
+        const gmp = gmpMatch ? parseInt(gmpMatch[0]) : 0;
+        const expectedMatch = expectedText.match(/\d+/);
+        const expectedListing = expectedMatch ? parseInt(expectedMatch[0]) : 0;
+        
+        if (symbol && symbol.length >= 3) {
+          const existing = gmpData.find(g => g.symbol === symbol);
+          if (!existing) {
+            gmpData.push({ symbol, gmp, expectedListing });
+          }
+        }
+      });
       
-      const symbol = companyName
-        .replace(/\s+(Ltd|Limited|IPO|India|Private|Pvt)\.?/gi, "")
-        .replace(/[^a-zA-Z0-9]/g, "")
-        .toUpperCase()
-        .slice(0, 10);
-      
-      const gmp = parseInt(gmpText.replace(/[^-0-9]/g, "")) || 0;
-      const expectedListing = parseInt(expectedText.replace(/[^0-9]/g, "")) || 0;
-      
-      if (symbol) {
-        gmpData.push({ symbol, gmp, expectedListing });
-      }
-    });
-    
-    console.log(`✅ Found GMP data for ${gmpData.length} IPOs`);
-    return gmpData;
-  } catch (error) {
-    console.error("GMP scrape failed:", error);
-    return [];
+      if (gmpData.length > 0) break;
+    } catch (error) {
+      console.log(`GMP fetch from ${gmpUrl} failed, trying next...`);
+    }
   }
+  
+  console.log(`✅ Found GMP data for ${gmpData.length} IPOs`);
+  return gmpData;
 }
 
 function extractPriceFromRange(priceRange: string): number | null {

@@ -161,45 +161,45 @@ export function IpoCard({ ipo, compact = false }: IpoCardProps) {
 
   return (
     <div 
-      className="group relative premium-card p-6 flex flex-col h-full"
+      className="group relative premium-card p-6 flex flex-col min-h-[340px]"
       data-testid={`card-ipo-${ipo.id}`}
     >
       <div className="absolute top-0 right-0 w-40 h-40 bg-purple-500/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
       
-      <div className="flex justify-between items-start mb-5 relative z-10">
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-3">
-            <span className="font-display text-2xl font-bold tracking-tight text-white group-hover:text-purple-400 transition-colors duration-300">
+      <div className="flex justify-between items-start gap-3 mb-5 relative z-10">
+        <div className="space-y-1.5 min-w-0 flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-display text-xl font-bold tracking-tight text-white group-hover:text-purple-400 transition-colors duration-300">
               {ipo.symbol}
             </span>
             <Badge 
               variant="outline" 
-              className={`text-[10px] font-bold uppercase tracking-[0.15em] px-2.5 py-0.5 rounded-full border ${getStatusStyles(ipo.status)}`}
+              className={`text-[10px] font-bold uppercase tracking-[0.12em] px-2 py-0.5 rounded-full border shrink-0 ${getStatusStyles(ipo.status)}`}
             >
               {ipo.status}
             </Badge>
           </div>
-          <h3 className="text-base text-white/50 font-medium line-clamp-1">
+          <h3 className="text-sm text-white/50 font-medium line-clamp-1">
             {ipo.companyName}
           </h3>
         </div>
-        <div className="flex flex-col items-end gap-2">
-          <ScoreRing score={ipo.overallScore} />
+        <div className="flex flex-col items-end gap-2 shrink-0">
+          <ScoreRing score={ipo.overallScore} size="sm" />
           <RiskBadge riskLevel={ipo.riskLevel} />
         </div>
       </div>
 
-      <div className="space-y-4 mb-6 flex-1 relative z-10">
+      <div className="space-y-3 mb-4 flex-1 relative z-10">
         <div className="grid grid-cols-2 gap-3">
           <div className="stat-card">
-            <p className="text-[10px] text-white/30 uppercase tracking-[0.2em] font-semibold mb-1.5">Price Range</p>
-            <p className="font-display font-bold text-base text-white">{ipo.priceRange}</p>
+            <p className="text-[10px] text-white/30 uppercase tracking-[0.2em] font-semibold mb-1">Price Range</p>
+            <p className="font-display font-bold text-sm text-white truncate">{ipo.priceRange}</p>
           </div>
           <div className="stat-card">
-            <p className="text-[10px] text-white/30 uppercase tracking-[0.2em] font-semibold mb-1.5">Issue Size</p>
-            <div className="font-display font-bold text-base text-white">
+            <p className="text-[10px] text-white/30 uppercase tracking-[0.2em] font-semibold mb-1">Issue Size</p>
+            <p className="font-display font-bold text-sm text-white truncate">
               {ipo.issueSize || "TBA"}
-            </div>
+            </p>
           </div>
         </div>
         
