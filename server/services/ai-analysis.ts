@@ -1,10 +1,16 @@
 import OpenAI from "openai";
 import type { Ipo } from "@shared/schema";
 
-const openai = new OpenAI({
-  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
-  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
-});
+function getOpenAIClient(): OpenAI | null {
+  const apiKey = process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
+  if (!apiKey) {
+    return null;
+  }
+  return new OpenAI({
+    apiKey,
+    baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+  });
+}
 
 interface AIAnalysisResult {
   summary: string;
@@ -14,6 +20,16 @@ interface AIAnalysisResult {
 }
 
 export async function analyzeIpo(ipo: Ipo): Promise<AIAnalysisResult> {
+  const openai = getOpenAIClient();
+  if (!openai) {
+    return {
+      summary: "AI analysis requires OpenAI API key configuration.",
+      recommendation: "Unable to generate recommendation without API key.",
+      riskAssessment: ipo.riskLevel || "unknown",
+      keyInsights: [],
+    };
+  }
+
   const prompt = buildAnalysisPrompt(ipo);
   
   try {
