@@ -71,7 +71,8 @@ export function IpoCard({ ipo, compact = false }: IpoCardProps) {
   }
 
   return (
-    <div className="group relative bg-card rounded-2xl border border-border/50 p-6 shadow-sm hover:shadow-xl hover:shadow-primary/5 hover:border-primary/20 transition-all duration-300 flex flex-col h-full">
+    <div className="group relative bg-card rounded-3xl border border-card-border/50 p-6 shadow-2xl hover:shadow-[0_0_50px_-12px_rgba(139,92,246,0.3)] hover:border-primary/40 transition-all duration-500 flex flex-col h-full overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       <div className="flex justify-between items-start mb-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">

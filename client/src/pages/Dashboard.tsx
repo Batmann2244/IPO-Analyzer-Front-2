@@ -32,10 +32,11 @@ export default function Dashboard() {
   const uniqueSectors = Array.from(new Set(ipos?.map(i => i.sector).filter(Boolean)));
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <div>
-        <h1 className="text-3xl font-display font-bold tracking-tight">Indian Market Overview</h1>
-        <p className="text-muted-foreground mt-2">Track the latest NSE & BSE public offerings and market movements.</p>
+    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="relative">
+        <div className="absolute -left-20 -top-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+        <h1 className="text-4xl md:text-5xl font-display font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-foreground to-foreground/50">Indian Market Overview</h1>
+        <p className="text-muted-foreground mt-3 text-lg font-medium">Track the latest NSE & BSE public offerings and market movements.</p>
       </div>
 
       {/* Filters Toolbar */}
