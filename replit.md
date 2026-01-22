@@ -32,6 +32,24 @@ This is a screening tool only. Scores are computed from available data and shoul
 
 Preferred communication style: Simple, everyday language.
 
+## UI Design
+
+### Design System (January 2026)
+- **Style**: Clean, light IPOAlerts-inspired design
+- **Background**: White/light colors (not dark theme)
+- **Primary Color**: Orange (#F26522) - used for buttons, accents, highlights
+- **Font**: Inter (sans-serif)
+- **Cards**: Clean white cards with subtle borders and shadows
+- **Status Badges**: Color-coded (green for Open, blue for Upcoming, gray for Closed)
+
+### Key Pages
+- **Landing** (`/`): Scrolling ticker, hero section with status tabs (Open/Upcoming/Announced/Closed)
+- **Dashboard** (`/dashboard`): Stats cards, search, filters, IPO card grid
+- **IPO Detail** (`/ipos/:id`): Score ring visualization, metrics cards, AI analysis section
+- **Watchlist** (`/watchlist`): Tracked IPOs table with remove functionality
+- **Settings** (`/settings`): Profile info, alert preferences (email/Telegram)
+- **Admin** (`/admin`): Data sync controls, database stats
+
 ## System Architecture
 
 ### Frontend Architecture
