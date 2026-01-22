@@ -14,6 +14,9 @@ import Watchlist from "@/pages/Watchlist";
 import IpoDetail from "@/pages/IpoDetail";
 import Settings from "@/pages/Settings";
 import Admin from "@/pages/Admin";
+import ApiDashboard from "@/pages/ApiDashboard";
+import ApiKeys from "@/pages/ApiKeys";
+import Billing from "@/pages/Billing";
 import NotFound from "@/pages/not-found";
 
 function PrivateRoute({ component: Component }: { component: React.ComponentType }) {
@@ -63,6 +66,9 @@ function Router() {
       <Route path="/ipos/:id" component={() => <PrivateRoute component={IpoDetail} />} />
       <Route path="/settings" component={() => <PrivateRoute component={Settings} />} />
       <Route path="/admin" component={() => <PrivateRoute component={Admin} />} />
+      <Route path="/api-dashboard" component={() => <PrivateRoute component={ApiDashboard} />} />
+      <Route path="/api-keys" component={() => <PrivateRoute component={ApiKeys} />} />
+      <Route path="/billing" component={() => <PrivateRoute component={Billing} />} />
       <Route component={NotFound} />
     </Switch>
   );

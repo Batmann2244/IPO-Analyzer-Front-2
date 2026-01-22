@@ -188,93 +188,74 @@ function ApiPreviewSection({ activeStatus, ipos }: { activeStatus: string; ipos:
     setTimeout(() => setCopied(false), 2000);
   };
   
+  const renderJsonLine = (indent: number, key: string, value: string | number | null, isString: boolean, comma: boolean = true) => (
+    <div style={{ paddingLeft: `${indent * 16}px` }}>
+      <span className="text-[#c678dd]">"{key}"</span>
+      <span className="text-white">: </span>
+      {isString ? (
+        <span className="text-[#98c379]">"{value}"</span>
+      ) : (
+        <span className="text-[#d19a66]">{value === null ? 'null' : value}</span>
+      )}
+      {comma && <span className="text-white">,</span>}
+    </div>
+  );
+
   return (
-    <div className="bg-[#1e1e2e] rounded-2xl overflow-hidden shadow-2xl">
-      <div className="flex items-center gap-2 p-4 border-b border-gray-700">
+    <div className="bg-[#282c34] rounded-2xl overflow-hidden shadow-2xl">
+      <div className="flex items-center gap-2 px-4 py-3 bg-[#21252b] border-b border-[#181a1f]">
         <div className="flex gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-red-500"></div>
-          <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-          <div className="w-3 h-3 rounded-full bg-green-500"></div>
+          <div className="w-3 h-3 rounded-full bg-[#ff5f56]"></div>
+          <div className="w-3 h-3 rounded-full bg-[#ffbd2e]"></div>
+          <div className="w-3 h-3 rounded-full bg-[#27c93f]"></div>
         </div>
-        <div className="flex-1 bg-[#2d2d3d] rounded-lg px-4 py-2 text-sm flex items-center gap-2 ml-2">
-          <Shield className="w-4 h-4 text-green-500" />
-          <span className="text-green-400 font-mono text-xs">{apiUrl}</span>
-          <button 
-            onClick={handleCopy}
-            className="ml-auto text-gray-400 hover:text-white transition-colors"
-            data-testid="button-copy-api-url"
-          >
+        <div className="flex-1 bg-[#1e2127] rounded-md px-3 py-1.5 text-sm flex items-center gap-2 ml-2">
+          <Shield className="w-4 h-4 text-[#27c93f]" />
+          <span className="text-[#98c379] font-mono text-xs">{apiUrl}</span>
+          <button onClick={handleCopy} className="ml-auto text-gray-500 hover:text-white transition-colors" data-testid="button-copy-api-url">
             <Copy className="w-4 h-4" />
           </button>
-          <ExternalLink className="w-4 h-4 text-gray-400" />
+          <ExternalLink className="w-4 h-4 text-gray-500" />
         </div>
       </div>
       
-      <div className="p-4 max-h-[400px] overflow-auto">
-        <pre className="text-sm font-mono leading-relaxed">
-          <code>
-            <span className="text-gray-400">{"{"}</span>
-            {"\n"}
-            <span className="text-purple-400">  "meta"</span><span className="text-gray-400">: {"{"}</span>
-            {"\n"}
-            <span className="text-purple-400">    "count"</span><span className="text-gray-400">:</span> <span className="text-orange-400">{jsonData.meta.count}</span><span className="text-gray-400">,</span>
-            {"\n"}
-            <span className="text-purple-400">    "countOnPage"</span><span className="text-gray-400">:</span> <span className="text-orange-400">{jsonData.meta.countOnPage}</span><span className="text-gray-400">,</span>
-            {"\n"}
-            <span className="text-purple-400">    "totalPages"</span><span className="text-gray-400">:</span> <span className="text-orange-400">1</span><span className="text-gray-400">,</span>
-            {"\n"}
-            <span className="text-purple-400">    "page"</span><span className="text-gray-400">:</span> <span className="text-orange-400">1</span><span className="text-gray-400">,</span>
-            {"\n"}
-            <span className="text-purple-400">    "limit"</span><span className="text-gray-400">:</span> <span className="text-orange-400">10</span><span className="text-gray-400">,</span>
-            {"\n"}
-            <span className="text-purple-400">    "info"</span><span className="text-gray-400">:</span> <span className="text-green-400">"IPO Analyzer API - Real-time data"</span>
-            {"\n"}
-            <span className="text-gray-400">  {"}"}</span><span className="text-gray-400">,</span>
-            {"\n"}
-            <span className="text-purple-400">  "ipos"</span><span className="text-gray-400">: [</span>
-            {jsonData.ipos.map((ipo, idx) => (
-              <span key={idx}>
-                {"\n"}
-                <span className="text-gray-400">    {"{"}</span>
-                {"\n"}
-                <span className="text-purple-400">      "id"</span><span className="text-gray-400">:</span> <span className="text-green-400">"{ipo.id}"</span><span className="text-gray-400">,</span>
-                {"\n"}
-                <span className="text-purple-400">      "source"</span><span className="text-gray-400">:</span> <span className="text-green-400">"bse"</span><span className="text-gray-400">,</span>
-                {"\n"}
-                <span className="text-purple-400">      "bseInfoUrl"</span><span className="text-gray-400">:</span> <span className="text-green-400 break-all">"{ipo.bseInfoUrl.slice(0, 50)}..."</span><span className="text-gray-400">,</span>
-                {"\n"}
-                <span className="text-purple-400">      "status"</span><span className="text-gray-400">:</span> <span className="text-green-400">"{ipo.status}"</span><span className="text-gray-400">,</span>
-                {"\n"}
-                <span className="text-purple-400">      "slug"</span><span className="text-gray-400">:</span> <span className="text-green-400">"{ipo.slug}"</span><span className="text-gray-400">,</span>
-                {"\n"}
-                <span className="text-purple-400">      "name"</span><span className="text-gray-400">:</span> <span className="text-green-400">"{ipo.name}"</span><span className="text-gray-400">,</span>
-                {"\n"}
-                <span className="text-purple-400">      "symbol"</span><span className="text-gray-400">:</span> <span className="text-green-400">"{ipo.symbol}"</span><span className="text-gray-400">,</span>
-                {"\n"}
-                <span className="text-purple-400">      "type"</span><span className="text-gray-400">:</span> <span className="text-green-400">"EQ"</span><span className="text-gray-400">,</span>
-                {"\n"}
-                <span className="text-purple-400">      "startDate"</span><span className="text-gray-400">:</span> <span className="text-green-400">"{ipo.startDate}"</span><span className="text-gray-400">,</span>
-                {"\n"}
-                <span className="text-purple-400">      "endDate"</span><span className="text-gray-400">:</span> <span className="text-green-400">"{ipo.endDate}"</span><span className="text-gray-400">,</span>
-                {"\n"}
-                <span className="text-purple-400">      "priceRange"</span><span className="text-gray-400">:</span> <span className="text-green-400">"{ipo.priceRange}"</span><span className="text-gray-400">,</span>
-                {"\n"}
-                <span className="text-purple-400">      "gmp"</span><span className="text-gray-400">:</span> <span className="text-orange-400">{ipo.gmp ?? 'null'}</span><span className="text-gray-400">,</span>
-                {"\n"}
-                <span className="text-purple-400">      "overallScore"</span><span className="text-gray-400">:</span> <span className="text-orange-400">{ipo.overallScore ?? 'null'}</span>
-                {"\n"}
-                <span className="text-gray-400">    {"}"}</span>{idx < jsonData.ipos.length - 1 && <span className="text-gray-400">,</span>}
-              </span>
-            ))}
-            {jsonData.ipos.length === 0 && (
-              <span className="text-gray-500 italic">{"\n"}    // No {activeStatus} IPOs currently available</span>
-            )}
-            {"\n"}
-            <span className="text-gray-400">  ]</span>
-            {"\n"}
-            <span className="text-gray-400">{"}"}</span>
-          </code>
-        </pre>
+      <div className="p-6 max-h-[420px] overflow-auto font-mono text-sm leading-6">
+        <div className="text-white">{"{"}</div>
+        <div style={{ paddingLeft: '16px' }}>
+          <span className="text-[#c678dd]">"meta"</span><span className="text-white">: {"{"}</span>
+        </div>
+        {renderJsonLine(2, "count", jsonData.meta.count, false)}
+        {renderJsonLine(2, "countOnPage", jsonData.meta.countOnPage, false)}
+        {renderJsonLine(2, "totalPages", 1, false)}
+        {renderJsonLine(2, "page", 1, false)}
+        {renderJsonLine(2, "limit", 1, false)}
+        {renderJsonLine(2, "info", "To get all IPOs, please provide a valid API key. Contact support for more information.", true, false)}
+        <div style={{ paddingLeft: '16px' }} className="text-white">{"}"},</div>
+        <div style={{ paddingLeft: '16px' }}>
+          <span className="text-[#c678dd]">"ipos"</span><span className="text-white">: [</span>
+        </div>
+        {jsonData.ipos.map((ipo, idx) => (
+          <div key={idx}>
+            <div style={{ paddingLeft: '32px' }} className="text-white">{"{"}</div>
+            {renderJsonLine(3, "id", ipo.id, true)}
+            {renderJsonLine(3, "source", "bse", true)}
+            {renderJsonLine(3, "bseInfoUrl", `${ipo.bseInfoUrl.slice(0, 60)}...`, true)}
+            {renderJsonLine(3, "status", ipo.status, true)}
+            {renderJsonLine(3, "slug", ipo.slug, true)}
+            {renderJsonLine(3, "name", ipo.name, true)}
+            {renderJsonLine(3, "symbol", ipo.symbol, true)}
+            {renderJsonLine(3, "type", "EQ", true)}
+            {renderJsonLine(3, "startDate", ipo.startDate, true)}
+            {renderJsonLine(3, "endDate", ipo.endDate, true)}
+            {renderJsonLine(3, "priceRange", ipo.priceRange, true, false)}
+            <div style={{ paddingLeft: '32px' }} className="text-white">{"}"}{idx < jsonData.ipos.length - 1 && ","}</div>
+          </div>
+        ))}
+        {jsonData.ipos.length === 0 && (
+          <div style={{ paddingLeft: '32px' }} className="text-gray-500">{"// No " + activeStatus + " IPOs currently available"}</div>
+        )}
+        <div style={{ paddingLeft: '16px' }} className="text-white">]</div>
+        <div className="text-white">{"}"}</div>
       </div>
     </div>
   );
