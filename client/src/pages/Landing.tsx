@@ -43,29 +43,37 @@ function ScrollingTicker() {
       };
     });
   
-  if (tickerItems.length === 0) {
-    const defaultItems = [
-      { name: "SAMPLE1", gmp: 25, isPositive: true },
-      { name: "SAMPLE2", gmp: -5, isPositive: false },
-      { name: "SAMPLE3", gmp: 18, isPositive: true },
-      { name: "SAMPLE4", gmp: 32, isPositive: true },
-      { name: "SAMPLE5", gmp: -2, isPositive: false },
-    ];
+  const allIpoItems = (ipos || [])
+    .slice(0, 15)
+    .map(ipo => ({
+      name: ipo.symbol || ipo.companyName.split(' ')[0].toUpperCase().slice(0, 10),
+      hasGmp: ipo.gmp !== null && ipo.gmp !== undefined,
+      gmp: (() => {
+        if (ipo.gmp === null || ipo.gmp === undefined) return 0;
+        const priceStr = ipo.priceRange || "100";
+        const priceParts = priceStr.split('-');
+        const basePrice = parseFloat(priceParts[0].replace(/[^\d.]/g, '')) || 100;
+        return basePrice > 0 ? Math.round((ipo.gmp / basePrice) * 100) : 0;
+      })(),
+      isPositive: (ipo.gmp || 0) >= 0
+    }));
+
+  if (allIpoItems.length === 0) {
     return (
       <div className="bg-[#1a1a1a] overflow-hidden py-2.5">
-        <div className="flex ticker-scroll">
-          {[...defaultItems, ...defaultItems, ...defaultItems].map((item, i) => (
-            <TickerItem key={i} name={item.name} gmp={item.gmp} isPositive={item.isPositive} />
-          ))}
+        <div className="flex items-center justify-center text-gray-400 text-sm py-1">
+          Loading IPO data...
         </div>
       </div>
     );
   }
+
+  const displayItems = tickerItems.length > 0 ? tickerItems : allIpoItems;
   
   return (
     <div className="bg-[#1a1a1a] overflow-hidden py-2.5">
       <div className="flex ticker-scroll">
-        {[...tickerItems, ...tickerItems, ...tickerItems].map((item, i) => (
+        {[...displayItems, ...displayItems, ...displayItems].map((item, i) => (
           <TickerItem key={i} name={item.name} gmp={item.gmp} isPositive={item.isPositive} />
         ))}
       </div>

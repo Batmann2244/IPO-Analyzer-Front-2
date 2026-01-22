@@ -10,9 +10,8 @@ import {
   TrendingUp,
   Shield,
   ChevronDown,
-  Key,
-  CreditCard,
-  CalendarDays
+  CalendarDays,
+  Wrench
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -32,6 +31,7 @@ export function Navigation() {
     { href: "/calendar", label: "Calendar", icon: CalendarDays },
     { href: "/watchlist", label: "Watchlist", icon: Bookmark },
     { href: "/settings", label: "Settings", icon: Settings },
+    { href: "/admin", label: "Admin", icon: Wrench },
   ];
 
   return (
