@@ -19,7 +19,7 @@ function TickerItem({ name, gmp, isPositive }: { name: string; gmp: number; isPo
       <span className="font-semibold text-white">{name}</span>
       <span className={`flex items-center gap-0.5 font-medium ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
         {isPositive ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-        {gmp > 0 ? '+' : ''}{gmp}%
+        {gmp > 0 ? '+' : ''}₹{Math.abs(gmp)}
       </span>
     </div>
   );
@@ -31,30 +31,18 @@ function ScrollingTicker() {
   const tickerItems = (ipos || [])
     .filter(ipo => ipo.gmp !== null && ipo.gmp !== undefined)
     .slice(0, 15)
-    .map(ipo => {
-      const priceStr = ipo.priceRange || "100";
-      const priceParts = priceStr.split('-');
-      const basePrice = parseFloat(priceParts[0].replace(/[^\d.]/g, '')) || 100;
-      const gmpPercent = basePrice > 0 ? Math.round(((ipo.gmp || 0) / basePrice) * 100) : 0;
-      return {
-        name: ipo.symbol || ipo.companyName.split(' ')[0].toUpperCase().slice(0, 10),
-        gmp: gmpPercent,
-        isPositive: (ipo.gmp || 0) >= 0
-      };
-    });
+    .map(ipo => ({
+      name: ipo.symbol || ipo.companyName.split(' ')[0].toUpperCase().slice(0, 10),
+      gmp: ipo.gmp || 0, // Show raw GMP value in Rs
+      isPositive: (ipo.gmp || 0) >= 0
+    }));
   
   const allIpoItems = (ipos || [])
     .slice(0, 15)
     .map(ipo => ({
       name: ipo.symbol || ipo.companyName.split(' ')[0].toUpperCase().slice(0, 10),
       hasGmp: ipo.gmp !== null && ipo.gmp !== undefined,
-      gmp: (() => {
-        if (ipo.gmp === null || ipo.gmp === undefined) return 0;
-        const priceStr = ipo.priceRange || "100";
-        const priceParts = priceStr.split('-');
-        const basePrice = parseFloat(priceParts[0].replace(/[^\d.]/g, '')) || 100;
-        return basePrice > 0 ? Math.round((ipo.gmp / basePrice) * 100) : 0;
-      })(),
+      gmp: ipo.gmp || 0, // Show raw GMP value in Rs
       isPositive: (ipo.gmp || 0) >= 0
     }));
 

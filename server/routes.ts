@@ -7,7 +7,7 @@ import { insertIpoSchema, insertAlertPreferencesSchema } from "@shared/schema";
 import { setupAuth, registerAuthRoutes } from "./replit_integrations/auth";
 import { z } from "zod";
 import { calculateIpoScore } from "./services/scoring";
-import { scrapeAndTransformIPOs, testScraper } from "./services/scraper";
+import { scrapeAndTransformIPOs, testScraper, generatePeerCompanies, generateGmpHistory, generateFundUtilization } from "./services/scraper";
 import { analyzeIpo } from "./services/ai-analysis";
 import { sendIpoEmailAlert } from "./services/email";
 
@@ -109,25 +109,59 @@ export async function registerRoutes(
       
       let created = 0;
       let updated = 0;
+      let analyticsAdded = 0;
       
       for (const ipo of scrapedIpos) {
         const existing = await storage.getIpoBySymbol(ipo.symbol);
-        await storage.upsertIpo(ipo);
+        const savedIpo = await storage.upsertIpo(ipo);
         
         if (existing) {
           updated++;
         } else {
           created++;
         }
+        
+        // Generate analytics data for each IPO
+        const ipoId = savedIpo.id;
+        const sector = savedIpo.sector || "Industrial";
+        
+        // Check if analytics data exists, if not generate it
+        const existingPeers = await storage.getPeerCompanies(ipoId);
+        if (existingPeers.length === 0) {
+          const peers = generatePeerCompanies(ipoId, sector);
+          for (const peer of peers) {
+            await storage.addPeerCompany(peer);
+          }
+          analyticsAdded++;
+        }
+        
+        // Add GMP history entry
+        if (savedIpo.gmp !== null) {
+          await storage.addGmpHistory({
+            ipoId,
+            gmp: savedIpo.gmp,
+            gmpPercentage: savedIpo.gmp * 0.8, // Approximate percentage
+          });
+        }
+        
+        // Generate fund utilization if not exists
+        const existingFunds = await storage.getFundUtilization(ipoId);
+        if (existingFunds.length === 0) {
+          const funds = generateFundUtilization(ipoId);
+          for (const fund of funds) {
+            await storage.addFundUtilization(fund);
+          }
+        }
       }
       
-      console.log(`✅ Sync complete: ${created} created, ${updated} updated`);
+      console.log(`✅ Sync complete: ${created} created, ${updated} updated, ${analyticsAdded} analytics generated`);
       
       res.json({
         success: true,
-        message: `Synced ${scrapedIpos.length} IPOs`,
+        message: `Synced ${scrapedIpos.length} IPOs with analytics data`,
         created,
         updated,
+        analyticsAdded,
         total: scrapedIpos.length,
       });
     } catch (error) {
@@ -317,9 +351,33 @@ async function autoSyncOnStartup() {
       
       if (scrapedIpos.length > 0) {
         for (const ipo of scrapedIpos) {
-          await storage.createIpo(ipo);
+          const savedIpo = await storage.createIpo(ipo);
+          
+          // Generate analytics data
+          const ipoId = savedIpo.id;
+          const sector = savedIpo.sector || "Industrial";
+          
+          // Generate peer companies
+          const peers = generatePeerCompanies(ipoId, sector);
+          for (const peer of peers) {
+            await storage.addPeerCompany(peer);
+          }
+          
+          // Generate GMP history (7 days of sample data)
+          if (savedIpo.gmp !== null) {
+            const gmpHistoryData = generateGmpHistory(ipoId, savedIpo.gmp);
+            for (const entry of gmpHistoryData) {
+              await storage.addGmpHistory(entry);
+            }
+          }
+          
+          // Generate fund utilization
+          const funds = generateFundUtilization(ipoId);
+          for (const fund of funds) {
+            await storage.addFundUtilization(fund);
+          }
         }
-        console.log(`✅ Auto-synced ${scrapedIpos.length} IPOs from Chittorgarh`);
+        console.log(`✅ Auto-synced ${scrapedIpos.length} IPOs with analytics data from Chittorgarh`);
       } else {
         console.log("⚠️ No IPOs found from scraper. Use Admin panel to manually sync.");
       }
