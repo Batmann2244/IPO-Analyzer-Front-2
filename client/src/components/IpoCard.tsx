@@ -57,7 +57,7 @@ export function IpoCard({ ipo, compact = false }: IpoCardProps) {
               <h3 className="font-bold text-lg">{ipo.symbol}</h3>
               <p className="text-sm text-muted-foreground truncate max-w-[150px]">{ipo.companyName}</p>
             </div>
-            <Badge variant="outline" className={getStatusColor(ipo.status)}>
+            <Badge variant="outline" className={`text-[10px] font-bold uppercase tracking-[0.2em] px-3 py-1 rounded-full border-white/10 ${getStatusColor(ipo.status)}`}>
               {ipo.status}
             </Badge>
           </div>
@@ -71,15 +71,16 @@ export function IpoCard({ ipo, compact = false }: IpoCardProps) {
   }
 
   return (
-    <div className="group relative bg-card rounded-3xl border border-card-border/50 p-6 shadow-2xl hover:shadow-[0_0_50px_-12px_rgba(139,92,246,0.3)] hover:border-primary/40 transition-all duration-500 flex flex-col h-full overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+    <div className="group relative bg-[#0A0A0B] rounded-[2rem] border border-white/[0.05] p-8 shadow-2xl hover:shadow-[0_0_80px_-15px_rgba(139,92,246,0.4)] hover:border-primary/50 transition-all duration-700 flex flex-col h-full overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+      <div className="absolute -right-10 -top-10 w-32 h-32 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors duration-700" />
       <div className="flex justify-between items-start mb-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <span className="font-mono text-2xl font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
               {ipo.symbol}
             </span>
-            <Badge variant="outline" className={getStatusColor(ipo.status)}>
+            <Badge variant="outline" className={`text-[10px] font-bold uppercase tracking-[0.2em] px-3 py-1 rounded-full border-white/10 ${getStatusColor(ipo.status)}`}>
               {ipo.status}
             </Badge>
           </div>
@@ -90,7 +91,7 @@ export function IpoCard({ ipo, compact = false }: IpoCardProps) {
         <Button
           size="icon"
           variant={isWatching ? "secondary" : "outline"}
-          className={`rounded-full transition-all duration-300 ${isWatching ? 'bg-primary/10 text-primary border-primary/20' : ''}`}
+          className={`rounded-full border-white/10 transition-all duration-500 hover:scale-110 active:scale-95 ${isWatching ? 'bg-primary/20 text-primary border-primary/30 shadow-[0_0_20px_rgba(139,92,246,0.2)]' : 'hover:bg-primary/10 hover:border-primary/30'}`}
           onClick={handleWatch}
           disabled={isPending || isWatching}
         >
@@ -100,14 +101,14 @@ export function IpoCard({ ipo, compact = false }: IpoCardProps) {
 
       <div className="space-y-4 mb-6 flex-1">
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-secondary/30 p-3 rounded-lg">
-            <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">Range</p>
-            <p className="font-medium font-mono">{ipo.priceRange}</p>
+          <div className="bg-white/[0.03] border border-white/[0.05] p-4 rounded-2xl backdrop-blur-sm group-hover:bg-white/[0.05] transition-colors duration-500">
+            <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-black mb-2 opacity-50">Range</p>
+            <p className="font-bold font-mono text-lg text-foreground tracking-tight">{ipo.priceRange}</p>
           </div>
-          <div className="bg-secondary/30 p-3 rounded-lg">
-            <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">Expected</p>
-            <div className="flex items-center gap-1.5 font-medium">
-              <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
+          <div className="bg-white/[0.03] border border-white/[0.05] p-4 rounded-2xl backdrop-blur-sm group-hover:bg-white/[0.05] transition-colors duration-500">
+            <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-black mb-2 opacity-50">Expected</p>
+            <div className="flex items-center gap-2 font-bold text-lg text-foreground tracking-tight">
+              <Calendar className="w-4 h-4 text-primary" />
               {ipo.expectedDate ? format(new Date(ipo.expectedDate), "dd-MM-yyyy") : "TBA"}
             </div>
           </div>
@@ -126,9 +127,9 @@ export function IpoCard({ ipo, compact = false }: IpoCardProps) {
       </div>
 
       <Link href={`/ipos/${ipo.id}`} className="block mt-auto">
-        <Button className="w-full justify-between group-hover:bg-primary group-hover:text-primary-foreground transition-colors" variant="secondary">
-          View Analysis
-          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+        <Button className="w-full h-14 rounded-2xl justify-between px-6 bg-white/[0.05] hover:bg-primary text-foreground hover:text-primary-foreground border-white/10 transition-all duration-500 group/btn font-bold tracking-tight" variant="secondary">
+          Analyze Opportunity
+          <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-2 transition-transform duration-500" />
         </Button>
       </Link>
     </div>

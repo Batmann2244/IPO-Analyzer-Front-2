@@ -32,11 +32,16 @@ export default function Dashboard() {
   const uniqueSectors = Array.from(new Set(ipos?.map(i => i.sector).filter(Boolean)));
 
   return (
-    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="relative">
-        <div className="absolute -left-20 -top-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
-        <h1 className="text-4xl md:text-5xl font-display font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-foreground to-foreground/50">Indian Market Overview</h1>
-        <p className="text-muted-foreground mt-3 text-lg font-medium">Track the latest NSE & BSE public offerings and market movements.</p>
+    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-1000">
+      <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-card to-card/50 p-10 border border-card-border/50 shadow-2xl">
+        <div className="absolute -right-20 -top-20 w-96 h-96 bg-primary/20 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute -left-20 -bottom-20 w-80 h-80 bg-accent/10 rounded-full blur-[80px] pointer-events-none" />
+        <h1 className="text-5xl md:text-7xl font-display font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-foreground via-foreground to-foreground/40 mb-4">
+          Market Intelligence
+        </h1>
+        <p className="text-muted-foreground text-xl font-medium max-w-2xl leading-relaxed">
+          Premium IPO analysis for the discerning Indian investor. Track Mainboard and SME offerings with precision.
+        </p>
       </div>
 
       {/* Filters Toolbar */}
