@@ -188,19 +188,6 @@ function ApiPreviewSection({ activeStatus, ipos }: { activeStatus: string; ipos:
     setTimeout(() => setCopied(false), 2000);
   };
   
-  const renderJsonLine = (indent: number, key: string, value: string | number | null, isString: boolean, comma: boolean = true) => (
-    <div style={{ paddingLeft: `${indent * 16}px` }}>
-      <span className="text-[#c678dd]">"{key}"</span>
-      <span className="text-white">: </span>
-      {isString ? (
-        <span className="text-[#98c379]">"{value}"</span>
-      ) : (
-        <span className="text-[#d19a66]">{value === null ? 'null' : value}</span>
-      )}
-      {comma && <span className="text-white">,</span>}
-    </div>
-  );
-
   return (
     <div className="bg-[#282c34] rounded-2xl overflow-hidden shadow-2xl">
       <div className="flex items-center gap-2 px-4 py-3 bg-[#21252b] border-b border-[#181a1f]">
@@ -219,43 +206,40 @@ function ApiPreviewSection({ activeStatus, ipos }: { activeStatus: string; ipos:
         </div>
       </div>
       
-      <div className="p-6 max-h-[420px] overflow-auto font-mono text-sm leading-6">
-        <div className="text-white">{"{"}</div>
-        <div style={{ paddingLeft: '16px' }}>
-          <span className="text-[#c678dd]">"meta"</span><span className="text-white">: {"{"}</span>
-        </div>
-        {renderJsonLine(2, "count", jsonData.meta.count, false)}
-        {renderJsonLine(2, "countOnPage", jsonData.meta.countOnPage, false)}
-        {renderJsonLine(2, "totalPages", 1, false)}
-        {renderJsonLine(2, "page", 1, false)}
-        {renderJsonLine(2, "limit", 1, false)}
-        {renderJsonLine(2, "info", "To get all IPOs, please provide a valid API key. Contact support for more information.", true, false)}
-        <div style={{ paddingLeft: '16px' }} className="text-white">{"}"},</div>
-        <div style={{ paddingLeft: '16px' }}>
-          <span className="text-[#c678dd]">"ipos"</span><span className="text-white">: [</span>
-        </div>
-        {jsonData.ipos.map((ipo, idx) => (
-          <div key={idx}>
-            <div style={{ paddingLeft: '32px' }} className="text-white">{"{"}</div>
-            {renderJsonLine(3, "id", ipo.id, true)}
-            {renderJsonLine(3, "source", "bse", true)}
-            {renderJsonLine(3, "bseInfoUrl", `${ipo.bseInfoUrl.slice(0, 60)}...`, true)}
-            {renderJsonLine(3, "status", ipo.status, true)}
-            {renderJsonLine(3, "slug", ipo.slug, true)}
-            {renderJsonLine(3, "name", ipo.name, true)}
-            {renderJsonLine(3, "symbol", ipo.symbol, true)}
-            {renderJsonLine(3, "type", "EQ", true)}
-            {renderJsonLine(3, "startDate", ipo.startDate, true)}
-            {renderJsonLine(3, "endDate", ipo.endDate, true)}
-            {renderJsonLine(3, "priceRange", ipo.priceRange, true, false)}
-            <div style={{ paddingLeft: '32px' }} className="text-white">{"}"}{idx < jsonData.ipos.length - 1 && ","}</div>
-          </div>
-        ))}
-        {jsonData.ipos.length === 0 && (
-          <div style={{ paddingLeft: '32px' }} className="text-gray-500">{"// No " + activeStatus + " IPOs currently available"}</div>
-        )}
-        <div style={{ paddingLeft: '16px' }} className="text-white">]</div>
-        <div className="text-white">{"}"}</div>
+      <div className="p-6 max-h-[420px] overflow-auto font-mono text-sm leading-6 text-left">
+        <pre className="text-white whitespace-pre">
+{`{
+  `}<span className="text-[#c678dd]">"meta"</span>{`: {
+    `}<span className="text-[#c678dd]">"count"</span>{`: `}<span className="text-[#d19a66]">{jsonData.meta.count}</span>{`,
+    `}<span className="text-[#c678dd]">"countOnPage"</span>{`: `}<span className="text-[#d19a66]">{jsonData.meta.countOnPage}</span>{`,
+    `}<span className="text-[#c678dd]">"totalPages"</span>{`: `}<span className="text-[#d19a66]">1</span>{`,
+    `}<span className="text-[#c678dd]">"page"</span>{`: `}<span className="text-[#d19a66]">1</span>{`,
+    `}<span className="text-[#c678dd]">"limit"</span>{`: `}<span className="text-[#d19a66]">1</span>{`,
+    `}<span className="text-[#c678dd]">"info"</span>{`: `}<span className="text-[#98c379]">"To get all IPOs, please provide a valid API key. Contact support for more information."</span>{`
+  },
+  `}<span className="text-[#c678dd]">"ipos"</span>{`: [`}
+{jsonData.ipos.map((ipo, idx) => (
+<span key={idx}>{`
+    {
+      `}<span className="text-[#c678dd]">"id"</span>{`: `}<span className="text-[#98c379]">"{ipo.id}"</span>{`,
+      `}<span className="text-[#c678dd]">"source"</span>{`: `}<span className="text-[#98c379]">"bse"</span>{`,
+      `}<span className="text-[#c678dd]">"bseInfoUrl"</span>{`: `}<span className="text-[#98c379]">"{ipo.bseInfoUrl.slice(0, 50)}..."</span>{`,
+      `}<span className="text-[#c678dd]">"status"</span>{`: `}<span className="text-[#98c379]">"{ipo.status}"</span>{`,
+      `}<span className="text-[#c678dd]">"slug"</span>{`: `}<span className="text-[#98c379]">"{ipo.slug}"</span>{`,
+      `}<span className="text-[#c678dd]">"name"</span>{`: `}<span className="text-[#98c379]">"{ipo.name}"</span>{`,
+      `}<span className="text-[#c678dd]">"symbol"</span>{`: `}<span className="text-[#98c379]">"{ipo.symbol}"</span>{`,
+      `}<span className="text-[#c678dd]">"type"</span>{`: `}<span className="text-[#98c379]">"EQ"</span>{`,
+      `}<span className="text-[#c678dd]">"startDate"</span>{`: `}<span className="text-[#98c379]">"{ipo.startDate}"</span>{`,
+      `}<span className="text-[#c678dd]">"endDate"</span>{`: `}<span className="text-[#98c379]">"{ipo.endDate}"</span>{`,
+      `}<span className="text-[#c678dd]">"priceRange"</span>{`: `}<span className="text-[#98c379]">"{ipo.priceRange}"</span>{`
+    }`}{idx < jsonData.ipos.length - 1 ? ',' : ''}</span>
+))}
+{jsonData.ipos.length === 0 && <span className="text-gray-500">{`
+    // No ${activeStatus} IPOs currently available`}</span>}
+{`
+  ]
+}`}
+        </pre>
       </div>
     </div>
   );
