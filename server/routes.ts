@@ -86,66 +86,62 @@ export async function registerRoutes(
 async function seedDatabase() {
   const existingIpos = await storage.getIpos();
   if (existingIpos.length === 0) {
-    console.log("Seeding database with initial IPOs...");
+    console.log("Seeding database with initial Indian IPOs...");
     const seedIpos = [
       {
-        symbol: "TECH",
-        companyName: "TechVision AI",
-        priceRange: "$25 - $28",
-        totalShares: "15M",
-        expectedDate: new Date("2024-11-15").toISOString(), // Pass date string, Drizzle handles it
-        status: "upcoming",
-        description: "Leading AI solutions provider for enterprise workflow automation.",
-        sector: "Technology",
-      },
-      {
-        symbol: "GREEN",
-        companyName: "GreenEnergy Corp",
-        priceRange: "$18 - $21",
-        totalShares: "10M",
-        expectedDate: new Date("2024-11-20").toISOString(),
-        status: "upcoming",
-        description: "Renewable energy infrastructure and solar panel manufacturing.",
-        sector: "Energy",
-      },
-      {
-        symbol: "HLTH",
-        companyName: "MediCare Plus",
-        priceRange: "$30 - $35",
-        totalShares: "8M",
-        expectedDate: new Date("2024-10-25").toISOString(),
-        status: "open",
-        description: "Next-generation healthcare platform connecting patients with specialists.",
-        sector: "Healthcare",
-      },
-      {
-        symbol: "FIN",
-        companyName: "Future Finance",
-        priceRange: "$40 - $45",
-        totalShares: "12M",
-        expectedDate: new Date("2024-09-10").toISOString(),
+        symbol: "SWIGGY",
+        companyName: "Swiggy Limited",
+        priceRange: "₹371 - ₹390",
+        totalShares: "293M",
+        expectedDate: new Date("2024-11-13").toISOString(),
         status: "closed",
-        description: "Blockchain-based decentralized finance (DeFi) trading platform.",
-        sector: "Finance",
+        description: "India's leading consumer technology platform offering food delivery, quick commerce, and more.",
+        sector: "Consumer Technology",
       },
-       {
-        symbol: "AUTO",
-        companyName: "Electric Motors Inc",
-        priceRange: "$22 - $26",
-        totalShares: "20M",
-        expectedDate: new Date("2024-12-05").toISOString(),
+      {
+        symbol: "HYUNDAI",
+        companyName: "Hyundai Motor India",
+        priceRange: "₹1865 - ₹1960",
+        totalShares: "142M",
+        expectedDate: new Date("2024-10-22").toISOString(),
+        status: "closed",
+        description: "Subsidiary of Hyundai Motor Company, the second largest automobile manufacturer in India.",
+        sector: "Automobile",
+      },
+      {
+        symbol: "WAREE",
+        companyName: "Waaree Energies Ltd",
+        priceRange: "₹1427 - ₹1503",
+        totalShares: "28M",
+        expectedDate: new Date("2024-10-28").toISOString(),
+        status: "closed",
+        description: "Largest manufacturer of solar PV modules in India with focus on renewable energy.",
+        sector: "Renewable Energy",
+      },
+      {
+        symbol: "ZINKA",
+        companyName: "Zinka Logistics Solution (BlackBuck)",
+        priceRange: "₹259 - ₹273",
+        totalShares: "40M",
+        expectedDate: new Date("2024-11-21").toISOString(),
         status: "upcoming",
-        description: "Manufacturer of affordable electric vehicles for the mass market.",
-        sector: "Consumer Discretionary",
+        description: "India's largest digital platform for truck operators.",
+        sector: "Logistics",
+      },
+      {
+        symbol: "NTPCGR",
+        companyName: "NTPC Green Energy",
+        priceRange: "₹102 - ₹108",
+        totalShares: "925M",
+        expectedDate: new Date("2024-11-27").toISOString(),
+        status: "upcoming",
+        description: "Renewable energy arm of NTPC focused on solar and wind power projects.",
+        sector: "Energy",
       }
     ];
 
     for (const ipo of seedIpos) {
-      // Drizzle date handling: pass Date object or ISO string. 
-      // InsertIpo expects strings for text fields and Date/string for date fields.
-      // Let's create a partial object matching InsertIpo structure.
-      // Note: expectedDate in schema is 'date', which maps to string in output but Date/string in input.
-      await storage.createIpo(ipo); 
+      await storage.createIpo(ipo);
     }
     console.log("Seeding complete.");
   }

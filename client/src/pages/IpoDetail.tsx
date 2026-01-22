@@ -126,7 +126,7 @@ export default function IpoDetail() {
                   <div>
                     <div className="text-sm text-muted-foreground">Expected Date</div>
                     <div className="font-medium text-lg">
-                      {ipo.expectedDate ? format(new Date(ipo.expectedDate), "MMMM d, yyyy") : "TBA"}
+                      {ipo.expectedDate ? format(new Date(ipo.expectedDate), "dd-MM-yyyy") : "TBA"}
                     </div>
                   </div>
                 </div>

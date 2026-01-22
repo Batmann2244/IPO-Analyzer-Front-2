@@ -63,7 +63,7 @@ export function IpoCard({ ipo, compact = false }: IpoCardProps) {
           </div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground mt-4">
             <Calendar className="w-4 h-4" />
-            {ipo.expectedDate ? format(new Date(ipo.expectedDate), "MMM d, yyyy") : "TBA"}
+            {ipo.expectedDate ? format(new Date(ipo.expectedDate), "dd-MM-yyyy") : "TBA"}
           </div>
         </div>
       </Link>
@@ -107,7 +107,7 @@ export function IpoCard({ ipo, compact = false }: IpoCardProps) {
             <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">Expected</p>
             <div className="flex items-center gap-1.5 font-medium">
               <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
-              {ipo.expectedDate ? format(new Date(ipo.expectedDate), "MMM d") : "TBA"}
+              {ipo.expectedDate ? format(new Date(ipo.expectedDate), "dd-MM-yyyy") : "TBA"}
             </div>
           </div>
         </div>
