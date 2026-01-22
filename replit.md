@@ -83,6 +83,29 @@ Preferred communication style: Simple, everyday language.
 - **Component Library**: shadcn/ui provides accessible, customizable primitives
 - **Protected Routes**: Frontend `PrivateRoute` wrapper checks auth state before rendering
 
+## Data Scraping & Sync
+
+### Data Sources
+- **Chittorgarh IPO Dashboard**: Main source for IPO listings, dates, issue size, price bands
+- **Chittorgarh GMP Page**: Live Grey Market Premium data
+
+### Scraper Service (`server/services/scraper.ts`)
+- Uses axios + cheerio for HTML parsing
+- Extracts IPO data: company name, symbol, dates, prices, lot size
+- Fetches GMP data and merges with IPO records
+- Automatically computes scores using the scoring engine
+
+### Admin API Endpoints (Protected)
+- `GET /api/admin/sync/test` - Test scraper connection
+- `POST /api/admin/sync` - Trigger full data sync (upserts by symbol)
+- `GET /api/admin/stats` - Get database statistics
+
+### Admin UI
+- Navigate to `/admin` after signing in
+- View database stats (total, open, upcoming IPOs)
+- Test connection to data source
+- Manually trigger data sync
+
 ## External Dependencies
 
 ### Database
