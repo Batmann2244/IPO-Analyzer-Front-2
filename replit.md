@@ -45,7 +45,8 @@ Preferred communication style: Simple, everyday language.
 ### Key Pages
 - **Landing** (`/`): Dark scrolling ticker with GMP%, hero section, API JSON preview, status tabs, FAQ accordion
 - **Dashboard** (`/dashboard`): Stats cards, search, filters, IPO card grid
-- **IPO Detail** (`/ipos/:id`): Score ring visualization, metrics cards, AI analysis section
+- **IPO Detail** (`/ipos/:id`): Score ring visualization, metrics cards, AI analysis section, GMP trend chart, peer comparison radar, subscription tracker, fund utilization chart
+- **Calendar** (`/calendar`): Interactive calendar with IPO events, upcoming dates, alerts integration
 - **Watchlist** (`/watchlist`): Tracked IPOs table with remove functionality
 - **Settings** (`/settings`): Profile info, email alert preferences
 - **Admin** (`/admin`): Data sync controls, database stats
@@ -154,6 +155,33 @@ Preferred communication style: Simple, everyday language.
 - `POST /api/alerts/preferences` - Update alert settings
 - `GET /api/alerts/logs` - Get alert history
 
+## Advanced Analytics Features
+
+### GMP Trend Tracking
+- `GET /api/ipos/:id/gmp-history` - Get 7-day GMP history for an IPO
+- Displays daily GMP changes with trend visualization
+- Helps investors understand market sentiment evolution
+
+### Peer Comparison Engine
+- `GET /api/ipos/:id/peers` - Get listed peer companies for comparison
+- Compares revenue growth, ROE, ROCE, P/E, EBITDA margin
+- Radar chart visualization for easy comparison
+
+### Live Subscription Tracker
+- `GET /api/ipos/:id/subscriptions` - Get subscription update history
+- `GET /api/ipos/:id/subscription/latest` - Get latest subscription data
+- Tracks QIB, NII/HNI, and Retail subscription ratios
+
+### Fund Utilization Tracking
+- `GET /api/ipos/:id/fund-utilization` - Get fund utilization breakdown
+- Shows planned allocation: debt repayment, capex, working capital, etc.
+- Track actual vs planned utilization post-listing
+
+### IPO Calendar
+- `GET /api/calendar/events` - Get all upcoming IPO events
+- `GET /api/ipos/:id/timeline` - Get timeline for specific IPO
+- Tracks DRHP filing, price band, open/close dates, allotment, listing
+
 ### Alert Types
 - New IPO announcements
 - GMP (Grey Market Premium) changes
@@ -164,7 +192,7 @@ Preferred communication style: Simple, everyday language.
 
 ### Database
 - **PostgreSQL**: Primary data store (connection via `DATABASE_URL` environment variable)
-- **Tables**: `users`, `sessions`, `ipos`, `watchlist`, `alert_preferences`, `alert_logs`
+- **Tables**: `users`, `sessions`, `ipos`, `watchlist`, `alert_preferences`, `alert_logs`, `gmp_history`, `peer_companies`, `subscription_updates`, `fund_utilization`, `ipo_timeline`
 
 ### Authentication
 - **Replit Auth**: OpenID Connect provider (`ISSUER_URL`, `REPL_ID` environment variables)

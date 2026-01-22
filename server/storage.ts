@@ -4,6 +4,11 @@ import {
   watchlist,
   alertPreferences,
   alertLogs,
+  gmpHistory,
+  peerCompanies,
+  subscriptionUpdates,
+  fundUtilization,
+  ipoTimeline,
   type Ipo,
   type InsertIpo,
   type WatchlistItem,
@@ -13,8 +18,18 @@ import {
   type InsertAlertPreferences,
   type AlertLog,
   type InsertAlertLog,
+  type GmpHistoryEntry,
+  type InsertGmpHistory,
+  type PeerCompany,
+  type InsertPeerCompany,
+  type SubscriptionUpdate,
+  type InsertSubscriptionUpdate,
+  type FundUtilizationEntry,
+  type InsertFundUtilization,
+  type IpoTimelineEvent,
+  type InsertIpoTimeline,
 } from "@shared/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, gte } from "drizzle-orm";
 import { authStorage, IAuthStorage } from "./replit_integrations/auth/storage";
 
 export interface IStorage extends IAuthStorage {
@@ -41,6 +56,30 @@ export interface IStorage extends IAuthStorage {
   // Alert Logs
   createAlertLog(log: InsertAlertLog): Promise<AlertLog>;
   getAlertLogs(userId?: string, limit?: number): Promise<AlertLog[]>;
+
+  // GMP History
+  addGmpHistory(entry: InsertGmpHistory): Promise<GmpHistoryEntry>;
+  getGmpHistory(ipoId: number, days?: number): Promise<GmpHistoryEntry[]>;
+
+  // Peer Companies
+  getPeerCompanies(ipoId: number): Promise<PeerCompany[]>;
+  addPeerCompany(peer: InsertPeerCompany): Promise<PeerCompany>;
+  deletePeerCompanies(ipoId: number): Promise<void>;
+
+  // Subscription Updates
+  addSubscriptionUpdate(update: InsertSubscriptionUpdate): Promise<SubscriptionUpdate>;
+  getSubscriptionUpdates(ipoId: number): Promise<SubscriptionUpdate[]>;
+  getLatestSubscription(ipoId: number): Promise<SubscriptionUpdate | undefined>;
+
+  // Fund Utilization
+  getFundUtilization(ipoId: number): Promise<FundUtilizationEntry[]>;
+  addFundUtilization(entry: InsertFundUtilization): Promise<FundUtilizationEntry>;
+  updateFundUtilization(id: number, data: Partial<InsertFundUtilization>): Promise<FundUtilizationEntry | undefined>;
+
+  // IPO Timeline
+  getIpoTimeline(ipoId: number): Promise<IpoTimelineEvent[]>;
+  addTimelineEvent(event: InsertIpoTimeline): Promise<IpoTimelineEvent>;
+  getAllUpcomingEvents(days?: number): Promise<(IpoTimelineEvent & { ipo: Ipo })[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -214,6 +253,123 @@ export class DatabaseStorage implements IStorage {
     return await query
       .orderBy(desc(alertLogs.createdAt))
       .limit(limit);
+  }
+
+  // GMP History
+  async addGmpHistory(entry: InsertGmpHistory): Promise<GmpHistoryEntry> {
+    const [created] = await db.insert(gmpHistory).values(entry).returning();
+    return created;
+  }
+
+  async getGmpHistory(ipoId: number, days: number = 7): Promise<GmpHistoryEntry[]> {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+    
+    return await db
+      .select()
+      .from(gmpHistory)
+      .where(and(
+        eq(gmpHistory.ipoId, ipoId),
+        gte(gmpHistory.recordedAt, startDate)
+      ))
+      .orderBy(desc(gmpHistory.recordedAt));
+  }
+
+  // Peer Companies
+  async getPeerCompanies(ipoId: number): Promise<PeerCompany[]> {
+    return await db
+      .select()
+      .from(peerCompanies)
+      .where(eq(peerCompanies.ipoId, ipoId));
+  }
+
+  async addPeerCompany(peer: InsertPeerCompany): Promise<PeerCompany> {
+    const [created] = await db.insert(peerCompanies).values(peer).returning();
+    return created;
+  }
+
+  async deletePeerCompanies(ipoId: number): Promise<void> {
+    await db.delete(peerCompanies).where(eq(peerCompanies.ipoId, ipoId));
+  }
+
+  // Subscription Updates
+  async addSubscriptionUpdate(update: InsertSubscriptionUpdate): Promise<SubscriptionUpdate> {
+    const [created] = await db.insert(subscriptionUpdates).values(update).returning();
+    return created;
+  }
+
+  async getSubscriptionUpdates(ipoId: number): Promise<SubscriptionUpdate[]> {
+    return await db
+      .select()
+      .from(subscriptionUpdates)
+      .where(eq(subscriptionUpdates.ipoId, ipoId))
+      .orderBy(desc(subscriptionUpdates.recordedAt));
+  }
+
+  async getLatestSubscription(ipoId: number): Promise<SubscriptionUpdate | undefined> {
+    const [latest] = await db
+      .select()
+      .from(subscriptionUpdates)
+      .where(eq(subscriptionUpdates.ipoId, ipoId))
+      .orderBy(desc(subscriptionUpdates.recordedAt))
+      .limit(1);
+    return latest;
+  }
+
+  // Fund Utilization
+  async getFundUtilization(ipoId: number): Promise<FundUtilizationEntry[]> {
+    return await db
+      .select()
+      .from(fundUtilization)
+      .where(eq(fundUtilization.ipoId, ipoId));
+  }
+
+  async addFundUtilization(entry: InsertFundUtilization): Promise<FundUtilizationEntry> {
+    const [created] = await db.insert(fundUtilization).values(entry).returning();
+    return created;
+  }
+
+  async updateFundUtilization(id: number, data: Partial<InsertFundUtilization>): Promise<FundUtilizationEntry | undefined> {
+    const [updated] = await db
+      .update(fundUtilization)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(fundUtilization.id, id))
+      .returning();
+    return updated;
+  }
+
+  // IPO Timeline
+  async getIpoTimeline(ipoId: number): Promise<IpoTimelineEvent[]> {
+    return await db
+      .select()
+      .from(ipoTimeline)
+      .where(eq(ipoTimeline.ipoId, ipoId))
+      .orderBy(ipoTimeline.eventDate);
+  }
+
+  async addTimelineEvent(event: InsertIpoTimeline): Promise<IpoTimelineEvent> {
+    const [created] = await db.insert(ipoTimeline).values(event).returning();
+    return created;
+  }
+
+  async getAllUpcomingEvents(days: number = 30): Promise<(IpoTimelineEvent & { ipo: Ipo })[]> {
+    const today = new Date();
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() + days);
+    
+    const events = await db
+      .select({
+        event: ipoTimeline,
+        ipo: ipos,
+      })
+      .from(ipoTimeline)
+      .innerJoin(ipos, eq(ipoTimeline.ipoId, ipos.id))
+      .where(and(
+        gte(ipoTimeline.eventDate, today.toISOString().split('T')[0])
+      ))
+      .orderBy(ipoTimeline.eventDate);
+    
+    return events.map(e => ({ ...e.event, ipo: e.ipo }));
   }
 }
 

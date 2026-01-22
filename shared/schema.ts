@@ -95,10 +95,74 @@ export const alertLogs = pgTable("alert_logs", {
   userId: text("user_id").references(() => users.id),
   ipoId: integer("ipo_id").references(() => ipos.id),
   alertType: text("alert_type").notNull(), // 'new_ipo', 'gmp_change', 'open_date', 'ai_analysis'
-  channel: text("channel").notNull(), // 'email', 'telegram'
+  channel: text("channel").notNull(), // 'email'
   status: text("status").notNull(), // 'sent', 'failed', 'pending'
   message: text("message"),
   error: text("error"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// GMP History for trend tracking
+export const gmpHistory = pgTable("gmp_history", {
+  id: serial("id").primaryKey(),
+  ipoId: integer("ipo_id").notNull().references(() => ipos.id),
+  gmp: integer("gmp").notNull(),
+  gmpPercentage: real("gmp_percentage"),
+  recordedAt: timestamp("recorded_at").defaultNow(),
+});
+
+// Peer companies for comparison
+export const peerCompanies = pgTable("peer_companies", {
+  id: serial("id").primaryKey(),
+  ipoId: integer("ipo_id").notNull().references(() => ipos.id),
+  companyName: text("company_name").notNull(),
+  symbol: text("symbol").notNull(),
+  marketCap: real("market_cap"), // in Cr
+  peRatio: real("pe_ratio"),
+  pbRatio: real("pb_ratio"),
+  roe: real("roe"),
+  roce: real("roce"),
+  revenueGrowth: real("revenue_growth"),
+  ebitdaMargin: real("ebitda_margin"),
+  debtToEquity: real("debt_to_equity"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Subscription updates (live tracking)
+export const subscriptionUpdates = pgTable("subscription_updates", {
+  id: serial("id").primaryKey(),
+  ipoId: integer("ipo_id").notNull().references(() => ipos.id),
+  qibSubscription: real("qib_subscription"),
+  niiSubscription: real("nii_subscription"), // HNI/NII
+  retailSubscription: real("retail_subscription"),
+  totalSubscription: real("total_subscription"),
+  recordedAt: timestamp("recorded_at").defaultNow(),
+});
+
+// Fund utilization tracking
+export const fundUtilization = pgTable("fund_utilization", {
+  id: serial("id").primaryKey(),
+  ipoId: integer("ipo_id").notNull().references(() => ipos.id),
+  category: text("category").notNull(), // 'debt_repayment', 'capex', 'working_capital', 'acquisitions', 'general_corporate'
+  plannedAmount: real("planned_amount"), // in Cr
+  plannedPercentage: real("planned_percentage"),
+  actualAmount: real("actual_amount"), // in Cr (tracked post-listing)
+  actualPercentage: real("actual_percentage"),
+  status: text("status"), // 'planned', 'in_progress', 'completed'
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// IPO Timeline/Calendar events
+export const ipoTimeline = pgTable("ipo_timeline", {
+  id: serial("id").primaryKey(),
+  ipoId: integer("ipo_id").notNull().references(() => ipos.id),
+  eventType: text("event_type").notNull(), // 'drhp_filing', 'price_band', 'open_date', 'close_date', 'allotment', 'refund', 'listing'
+  eventDate: date("event_date"),
+  eventTime: text("event_time"), // e.g., "10:00 AM"
+  description: text("description"),
+  isConfirmed: boolean("is_confirmed").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -123,6 +187,11 @@ export const insertIpoSchema = createInsertSchema(ipos).omit({ id: true, created
 export const insertWatchlistSchema = createInsertSchema(watchlist).omit({ id: true, createdAt: true });
 export const insertAlertPreferencesSchema = createInsertSchema(alertPreferences).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertAlertLogSchema = createInsertSchema(alertLogs).omit({ id: true, createdAt: true });
+export const insertGmpHistorySchema = createInsertSchema(gmpHistory).omit({ id: true, recordedAt: true });
+export const insertPeerCompanySchema = createInsertSchema(peerCompanies).omit({ id: true, createdAt: true });
+export const insertSubscriptionUpdateSchema = createInsertSchema(subscriptionUpdates).omit({ id: true, recordedAt: true });
+export const insertFundUtilizationSchema = createInsertSchema(fundUtilization).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertIpoTimelineSchema = createInsertSchema(ipoTimeline).omit({ id: true, createdAt: true });
 
 // === EXPLICIT API CONTRACT TYPES ===
 export type Ipo = typeof ipos.$inferSelect;
@@ -133,6 +202,16 @@ export type AlertPreferences = typeof alertPreferences.$inferSelect;
 export type InsertAlertPreferences = z.infer<typeof insertAlertPreferencesSchema>;
 export type AlertLog = typeof alertLogs.$inferSelect;
 export type InsertAlertLog = z.infer<typeof insertAlertLogSchema>;
+export type GmpHistoryEntry = typeof gmpHistory.$inferSelect;
+export type InsertGmpHistory = z.infer<typeof insertGmpHistorySchema>;
+export type PeerCompany = typeof peerCompanies.$inferSelect;
+export type InsertPeerCompany = z.infer<typeof insertPeerCompanySchema>;
+export type SubscriptionUpdate = typeof subscriptionUpdates.$inferSelect;
+export type InsertSubscriptionUpdate = z.infer<typeof insertSubscriptionUpdateSchema>;
+export type FundUtilizationEntry = typeof fundUtilization.$inferSelect;
+export type InsertFundUtilization = z.infer<typeof insertFundUtilizationSchema>;
+export type IpoTimelineEvent = typeof ipoTimeline.$inferSelect;
+export type InsertIpoTimeline = z.infer<typeof insertIpoTimelineSchema>;
 
 // API Responses
 export type IpoResponse = Ipo;

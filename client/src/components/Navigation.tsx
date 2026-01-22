@@ -11,7 +11,8 @@ import {
   Shield,
   ChevronDown,
   Key,
-  CreditCard
+  CreditCard,
+  CalendarDays
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -28,8 +29,9 @@ export function Navigation() {
 
   const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/api-keys", label: "API Keys", icon: Key },
-    { href: "/billing", label: "Billing", icon: CreditCard },
+    { href: "/calendar", label: "Calendar", icon: CalendarDays },
+    { href: "/watchlist", label: "Watchlist", icon: Bookmark },
+    { href: "/settings", label: "Settings", icon: Settings },
   ];
 
   return (

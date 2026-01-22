@@ -14,6 +14,7 @@ import Watchlist from "@/pages/Watchlist";
 import IpoDetail from "@/pages/IpoDetail";
 import Settings from "@/pages/Settings";
 import Admin from "@/pages/Admin";
+import Calendar from "@/pages/Calendar";
 import ApiDashboard from "@/pages/ApiDashboard";
 import ApiKeys from "@/pages/ApiKeys";
 import Billing from "@/pages/Billing";
@@ -63,6 +64,7 @@ function Router() {
       <Route path="/" component={user ? () => <PrivateRoute component={Dashboard} /> : Landing} />
       <Route path="/dashboard" component={() => <PrivateRoute component={Dashboard} />} />
       <Route path="/watchlist" component={() => <PrivateRoute component={Watchlist} />} />
+      <Route path="/calendar" component={() => <PrivateRoute component={Calendar} />} />
       <Route path="/ipos/:id" component={() => <PrivateRoute component={IpoDetail} />} />
       <Route path="/settings" component={() => <PrivateRoute component={Settings} />} />
       <Route path="/admin" component={() => <PrivateRoute component={Admin} />} />

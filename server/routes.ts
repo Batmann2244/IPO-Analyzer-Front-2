@@ -253,6 +253,54 @@ export async function registerRoutes(
     }
   });
 
+  // GMP History Routes
+  app.get("/api/ipos/:id/gmp-history", async (req, res) => {
+    const ipoId = Number(req.params.id);
+    const days = Number(req.query.days) || 7;
+    const history = await storage.getGmpHistory(ipoId, days);
+    res.json(history);
+  });
+
+  // Peer Comparison Routes
+  app.get("/api/ipos/:id/peers", async (req, res) => {
+    const ipoId = Number(req.params.id);
+    const peers = await storage.getPeerCompanies(ipoId);
+    res.json(peers);
+  });
+
+  // Subscription Updates Routes
+  app.get("/api/ipos/:id/subscriptions", async (req, res) => {
+    const ipoId = Number(req.params.id);
+    const updates = await storage.getSubscriptionUpdates(ipoId);
+    res.json(updates);
+  });
+
+  app.get("/api/ipos/:id/subscription/latest", async (req, res) => {
+    const ipoId = Number(req.params.id);
+    const latest = await storage.getLatestSubscription(ipoId);
+    res.json(latest || null);
+  });
+
+  // Fund Utilization Routes
+  app.get("/api/ipos/:id/fund-utilization", async (req, res) => {
+    const ipoId = Number(req.params.id);
+    const utilization = await storage.getFundUtilization(ipoId);
+    res.json(utilization);
+  });
+
+  // IPO Timeline/Calendar Routes
+  app.get("/api/ipos/:id/timeline", async (req, res) => {
+    const ipoId = Number(req.params.id);
+    const timeline = await storage.getIpoTimeline(ipoId);
+    res.json(timeline);
+  });
+
+  app.get("/api/calendar/events", async (req, res) => {
+    const days = Number(req.query.days) || 30;
+    const events = await storage.getAllUpcomingEvents(days);
+    res.json(events);
+  });
+
   // Seed Data
   await seedDatabase();
 

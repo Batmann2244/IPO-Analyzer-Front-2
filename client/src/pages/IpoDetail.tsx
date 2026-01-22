@@ -28,6 +28,10 @@ import {
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { GmpTrendChart } from "@/components/GmpTrendChart";
+import { PeerComparison } from "@/components/PeerComparison";
+import { SubscriptionTracker } from "@/components/SubscriptionTracker";
+import { FundUtilization } from "@/components/FundUtilization";
 
 function ScoreBar({ label, score, icon: Icon }: { label: string; score: number | null; icon: React.ElementType }) {
   if (score === null || score === undefined) return null;
@@ -446,9 +450,17 @@ export default function IpoDetail() {
               </div>
             )}
           </div>
+
+          <PeerComparison ipo={ipo} />
+          
+          <FundUtilization ipo={ipo} />
         </div>
 
         <div className="space-y-6">
+          <GmpTrendChart ipoId={ipo.id} currentGmp={ipo.gmp} />
+          
+          <SubscriptionTracker ipo={ipo} />
+          
           <div className="bg-card rounded-lg border border-border p-6">
             <h4 className="font-bold text-foreground text-sm mb-4 flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-primary" />
